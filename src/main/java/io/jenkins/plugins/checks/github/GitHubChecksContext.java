@@ -41,6 +41,12 @@ public abstract class GitHubChecksContext {
      */
     public abstract String getRepository();
 
+    /**
+     * Returns PR's author name in String.
+     * Return empty string if it is not PR or source not exist
+     *
+     * @return the author's name
+     */
     public String getContributor() {
         Optional<SCMHead> optionalHead = getScmFacade().findHead(getJob());
         if (optionalHead.isPresent()) {
@@ -50,10 +56,10 @@ public abstract class GitHubChecksContext {
                 String contributor = cm.getContributor();
                 return contributor;
             } else {
-                return "not PR";
+                return "";
             }
         }
-        return "source is null";
+        return "";
     }
 
     /**

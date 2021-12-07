@@ -65,18 +65,23 @@ public class GitHubChecksPublisher extends ChecksPublisher {
             GitHubAppCredentials credentials = context.getCredentials();
             GitHub gitHub = Connector.connect(StringUtils.defaultIfBlank(credentials.getApiUri(), gitHubUrl),
                     credentials);
+            boolean skipPublish = false;
             String contributor = context.getContributor();
             buildLogger.log("contributor name is " + contributor);
-            String repository = context.getRepository();
-            boolean isPrivate = gitHub.getRepository(repository).isPrivate();
-            GitHubStatusChecksProperties gitHubStatusChecksProperties = new GitHubStatusChecksProperties();
-            boolean publishNonConfluentIncPR = gitHubStatusChecksProperties.isPublishNonConfluentIncPR(context.getJob());
-            boolean publishConfluentIncPR = gitHubStatusChecksProperties.isPublishConfluentIncPR(context.getJob());
-            buildLogger.log("publishNonConfluentIncPR is " + publishNonConfluentIncPR);
-            buildLogger.log("publishConfluentIncPR is " + publishConfluentIncPR);
-            boolean isConfluentInc = orgCheck(contributor, gitHub, isPrivate);
-            boolean skipPublish = skipPublish(isPrivate, isConfluentInc, publishNonConfluentIncPR, publishConfluentIncPR);
-            buildLogger.log("skip publishing github status : " + skipPublish);
+            if (contributor.isEmpty()) {
+                skipPublish = false;
+            } else {
+                String repository = context.getRepository();
+                boolean isPrivate = gitHub.getRepository(repository).isPrivate();
+                GitHubStatusChecksProperties gitHubStatusChecksProperties = new GitHubStatusChecksProperties();
+                boolean publishNonConfluentIncPR = gitHubStatusChecksProperties.isPublishNonConfluentIncPR(context.getJob());
+                boolean publishConfluentIncPR = gitHubStatusChecksProperties.isPublishConfluentIncPR(context.getJob());
+                buildLogger.log("publishNonConfluentIncPR is " + publishNonConfluentIncPR);
+                buildLogger.log("publishConfluentIncPR is " + publishConfluentIncPR);
+                boolean isConfluentInc = orgCheck(contributor, gitHub, isPrivate);
+                skipPublish = skipPublish(isPrivate, isConfluentInc, publishNonConfluentIncPR, publishConfluentIncPR);
+                buildLogger.log("skip publishing github status : " + skipPublish);
+            }
             if (!skipPublish) {
                 GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details);
 
