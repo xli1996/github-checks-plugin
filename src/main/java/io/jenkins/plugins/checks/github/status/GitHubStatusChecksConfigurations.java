@@ -39,6 +39,10 @@ public interface GitHubStatusChecksConfigurations {
      * @return true if progress updates should be skipped.
      */
     boolean isSkipProgressUpdates();
+    
+    boolean isPublishConfluentIncPR();
+
+    boolean isPublishNonConfluentIncPR();
 }
 
 class DefaultGitHubStatusChecksConfigurations implements GitHubStatusChecksConfigurations {
@@ -64,6 +68,16 @@ class DefaultGitHubStatusChecksConfigurations implements GitHubStatusChecksConfi
 
     @Override
     public boolean isSkipProgressUpdates() {
+        return false;
+    }
+
+    @Override
+    public boolean isPublishConfluentIncPR() {
+        return false;
+    }
+
+    @Override
+    public boolean isPublishNonConfluentIncPR() {
         return false;
     }
 }
