@@ -155,9 +155,9 @@ public class GitHubChecksPublisher extends ChecksPublisher {
         try {
             GHUser user = github.getUser(username);
             GHOrganization org = github.getOrganization(GITHUB_ORG);
-            boolean isConfluentinc = user.isMemberOf(org);
-            buildLogger.log("contributorisConfluentinc: " + isConfluentinc);
-            return isConfluentinc;
+            boolean inGithubOrg = user.isMemberOf(org);
+            buildLogger.log("inGithubOrg: " + inGithubOrg);
+            return inGithubOrg;
         }
         catch (IOException e) {
             buildLogger.log("Failed to connect to GitHub " + e);
@@ -183,7 +183,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
                          boolean publishNonConfluentIncPR,
                          boolean publishConfluentIncPR) {
         if (isPrivate) {
-            // if repo is private, do not skip
+            // if repo is private, we should publish
             return true;
         }
         else if (!publishConfluentIncPR && !publishNonConfluentIncPR) {
