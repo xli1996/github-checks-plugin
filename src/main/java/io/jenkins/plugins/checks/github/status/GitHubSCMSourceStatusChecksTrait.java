@@ -27,7 +27,7 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
     private boolean suppressLogs = false;
     private boolean skipProgressUpdates = false;
     private boolean publishConfluentIncPR = false;
-    private boolean PublishNonConfluentIncPR = false;
+    private boolean publishNonConfluentIncPR = false;
 
     /**
      * Constructor for stapler.
@@ -87,7 +87,7 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
     }
 
     public boolean isPublishNonConfluentIncPR() {
-        return PublishNonConfluentIncPR;
+        return publishNonConfluentIncPR;
     }
 
     @DataBoundSetter
@@ -139,7 +139,7 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
 
     @DataBoundSetter
     public void setPublishNonConfluentIncPR(final boolean publishNonConfluentIncPR) {
-        this.PublishNonConfluentIncPR = publishNonConfluentIncPR;
+        this.publishNonConfluentIncPR = publishNonConfluentIncPR;
     }
 
     @Override

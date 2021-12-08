@@ -40,8 +40,18 @@ public interface GitHubStatusChecksConfigurations {
      */
     boolean isSkipProgressUpdates();
     
+    /**
+     * Return whether to publish github status check for confluent PR only.
+     * 
+     * @return true if publish confluent PR only
+     */
     boolean isPublishConfluentIncPR();
 
+    /**
+     * Return whether to publish github status check for non-confluent PR only.
+     * 
+     * @return true if publish non-confluent PR only
+     */
     boolean isPublishNonConfluentIncPR();
 }
 
