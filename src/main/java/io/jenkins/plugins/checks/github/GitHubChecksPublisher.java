@@ -28,7 +28,7 @@ import static java.lang.String.format;
  */
 public class GitHubChecksPublisher extends ChecksPublisher {
     private static final String GITHUB_URL = "https://api.github.com";
-    private static final String CONFLUENTINC = "confluentinc";
+    private static final String GITHUB_ORG = "confluentinc";
     private static final Logger SYSTEM_LOGGER = Logger.getLogger(GitHubChecksPublisher.class.getName());
 
     private final GitHubChecksContext context;
@@ -65,12 +65,10 @@ public class GitHubChecksPublisher extends ChecksPublisher {
             GitHubAppCredentials credentials = context.getCredentials();
             GitHub gitHub = Connector.connect(StringUtils.defaultIfBlank(credentials.getApiUri(), gitHubUrl),
                     credentials);
-            boolean skipPublish = false;
+            boolean shouldPublish = true;
             String contributor = context.getContributor();
-            buildLogger.log("contributor name is " + contributor);
-            if (contributor.isEmpty()) {
-                skipPublish = false;
-            } else {
+            if (!contributor.isEmpty()) {
+                buildLogger.log("contributor name is " + contributor);
                 String repository = context.getRepository();
                 boolean isPrivate = gitHub.getRepository(repository).isPrivate();
                 GitHubStatusChecksProperties gitHubStatusChecksProperties = new GitHubStatusChecksProperties();
@@ -78,11 +76,11 @@ public class GitHubChecksPublisher extends ChecksPublisher {
                 boolean publishConfluentIncPR = gitHubStatusChecksProperties.isPublishConfluentIncPR(context.getJob());
                 buildLogger.log("publishNonConfluentIncPR is " + publishNonConfluentIncPR);
                 buildLogger.log("publishConfluentIncPR is " + publishConfluentIncPR);
-                boolean isConfluentInc = orgCheck(contributor, gitHub, isPrivate);
-                skipPublish = skipPublish(isPrivate, isConfluentInc, publishNonConfluentIncPR, publishConfluentIncPR);
-                buildLogger.log("skip publishing github status : " + skipPublish);
+                boolean inGithubOrg = orgCheck(contributor, gitHub, isPrivate);
+                shouldPublish = shouldPublish(isPrivate, inGithubOrg, publishNonConfluentIncPR, publishConfluentIncPR);
+                buildLogger.log("publish github status : " + shouldPublish);
             }
-            if (!skipPublish) {
+            if (shouldPublish) {
                 GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details);
 
                 Optional<Long> existingId = context.getId(gitHubDetails.getName());
@@ -99,7 +97,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
                 context.addActionIfMissing(run.getId(), gitHubDetails.getName());
 
                 buildLogger.log("GitHub check (name: %s, status: %s) has been published.", gitHubDetails.getName(),
-                       gitHubDetails.getStatus());
+                                gitHubDetails.getStatus());
                 SYSTEM_LOGGER.fine(format("Published check for repo: %s, sha: %s, job name: %s, name: %s, status: %s",
                                 context.getRepository(),
                                 context.getHeadSha(),
@@ -154,55 +152,63 @@ public class GitHubChecksPublisher extends ChecksPublisher {
         if (isPrivate) {
             return true;
         }
-        try{
+        try {
             GHUser user = github.getUser(username);
-            GHOrganization org = github.getOrganization(CONFLUENTINC);
+            GHOrganization org = github.getOrganization(GITHUB_ORG);
             boolean isConfluentinc = user.isMemberOf(org);
             buildLogger.log("contributorisConfluentinc: " + isConfluentinc);
             return isConfluentinc;
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             buildLogger.log("Failed to connect to GitHub " + e);
             return false;
         }
     }
 
     /**
-     * Whether to skip publishing github status.
+     * Whether to publish github status.
      *
      * @param isPrivate
      *         whether repo is private
-     * @param isConfluentInc
+     * @param inGithubOrg
      *         whether contributor is member of confluentinc
      * @param publishNonConfluentIncPR
      *         publish non-confluentinc PR status only
      * @param publishConfluentIncPR
      *         publish confluentinc PR status only
-     * @return true if skip publishing
+     * @return true if we should publish github status
      */
-    private boolean skipPublish(boolean isPrivate,
-                         boolean isConfluentInc,
+    private boolean shouldPublish(boolean isPrivate,
+                         boolean inGithubOrg,
                          boolean publishNonConfluentIncPR,
                          boolean publishConfluentIncPR) {
         if (isPrivate) {
             // if repo is private, do not skip
+            return true;
+        }
+        else if (!publishConfluentIncPR && !publishNonConfluentIncPR) {
             return false;
-        } else if (!publishConfluentIncPR && !publishNonConfluentIncPR) {
-            return false;
-        } else {
+        }
+        else {
             // if contributor is member of confluentinc
-            if (isConfluentInc) {
-                if (publishConfluentIncPR)
-                    return false;
-                else if (publishNonConfluentIncPR)
+            if (inGithubOrg) {
+                if (publishConfluentIncPR) {
                     return true;
-            } else {
-                if (publishNonConfluentIncPR)
+                }
+                else if (publishNonConfluentIncPR) {
                     return false;
-                else if (publishConfluentIncPR)
+                }
+            }
+            else {
+                if (publishNonConfluentIncPR) {
                     return true;
+                }
+                else if (publishConfluentIncPR) {
+                    return false;
+                }
             }
         }
-        return false;
+        return true;
     }
 
 }

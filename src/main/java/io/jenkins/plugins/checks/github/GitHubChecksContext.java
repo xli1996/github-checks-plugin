@@ -55,7 +55,8 @@ public abstract class GitHubChecksContext {
                 ContributorMetadataAction cm = job.getAction(ContributorMetadataAction.class);
                 String contributor = cm.getContributor();
                 return contributor;
-            } else {
+            }
+            else {
                 return "";
             }
         }
