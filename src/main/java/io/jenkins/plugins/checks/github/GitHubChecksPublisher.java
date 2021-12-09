@@ -187,28 +187,11 @@ public class GitHubChecksPublisher extends ChecksPublisher {
             return true;
         }
         else if (!publishConfluentIncPR && !publishNonConfluentIncPR) {
-            return false;
+            return true;
         }
         else {
-            // if contributor is member of confluentinc
-            if (inGithubOrg) {
-                if (publishConfluentIncPR) {
-                    return true;
-                }
-                else if (publishNonConfluentIncPR) {
-                    return false;
-                }
-            }
-            else {
-                if (publishNonConfluentIncPR) {
-                    return true;
-                }
-                else if (publishConfluentIncPR) {
-                    return false;
-                }
-            }
+            return (inGithubOrg && publishConfluentIncPR) || (!inGithubOrg && publishNonConfluentIncPR);
         }
-        return true;
     }
 
 }
