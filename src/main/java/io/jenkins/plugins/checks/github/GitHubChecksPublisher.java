@@ -178,7 +178,8 @@ public class GitHubChecksPublisher extends ChecksPublisher {
      *         publish confluentinc PR status only
      * @return true if we should publish github status
      */
-    private boolean shouldPublish(boolean isPrivate,
+    @VisibleForTesting
+    boolean shouldPublish(boolean isPrivate,
                          boolean inGithubOrg,
                          boolean publishNonConfluentIncPR,
                          boolean publishConfluentIncPR) {
